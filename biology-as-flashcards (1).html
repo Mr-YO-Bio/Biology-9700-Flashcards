@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9700 Biology AS Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0d;
+    --surface: #111a15;
+    --surface2: #162019;
+    --border: #1e3024;
+    --accent: #3dffa0;
+    --accent2: #1aff80;
+    --accent-dim: rgba(61,255,160,0.12);
+    --accent-glow: rgba(61,255,160,0.25);
+    --text: #e8f5ee;
+    --text-muted: #6a9478;
+    --text-dim: #3a5e46;
+    --card-front: #111a15;
+    --card-back: #0d1f15;
+    --danger: #ff6b6b;
+    --warning: #ffd166;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(61,255,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(61,255,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none; z-index:0;
+  }
+
+  /* Glow orb */
+  body::after {
+    content:'';
+    position:fixed;
+    width:600px; height:600px;
+    top:-200px; right:-200px;
+    background: radial-gradient(circle, rgba(61,255,160,0.06) 0%, transparent 70%);
+    pointer-events:none; z-index:0;
+  }
+
+  .app { position:relative; z-index:1; }
+
+  /* HEADER */
+  header {
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    backdrop-filter: blur(10px);
+    position: sticky; top:0; z-index:100;
+    background: rgba(10,15,13,0.85);
+  }
+
+  .logo {
+    display:flex; align-items:center; gap:12px;
+  }
+
+  .logo-icon {
+    width:36px; height:36px;
+    background: var(--accent);
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+  }
+
+  .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size:20px;
+    letter-spacing:-0.5px;
+  }
+
+  .logo-sub {
+    font-size:11px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-top:2px;
+  }
+
+  .header-stats {
+    display:flex; gap:24px;
+  }
+
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius:8px;
+    padding: 6px 14px;
+    font-family:'DM Mono', monospace;
+    font-size:12px;
+    color: var(--text-muted);
+  }
+
+  .stat-chip span {
+    color: var(--accent);
+    font-weight:500;
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    display:grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 73px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    overflow-y: auto;
+    background: var(--surface);
+  }
+
+  .sidebar-label {
+    font-family:'DM Mono', monospace;
+    font-size:10px;
+    letter-spacing:3px;
+    color: var(--text-dim);
+    text-transform:uppercase;
+    padding: 0 20px 10px;
+  }
+
+  .topic-btn {
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    padding: 10px 20px;
+    cursor:pointer;
+    display:flex; align-items:center; gap:10px;
+    color: var(--text-muted);
+    font-family:'DM Sans', sans-serif;
+    font-size:13px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    position:relative;
+  }
+
+  .topic-btn:hover {
+    color: var(--text);
+    background: var(--accent-dim);
+    border-left-color: var(--accent);
+  }
+
+  .topic-btn.active {
+    color: var(--accent);
+    background: var(--accent-dim);
+    border-left-color: var(--accent);
+    font-weight:500;
+  }
+
+  .topic-num {
+    font-family:'DM Mono', monospace;
+    font-size:10px;
+    color: var(--text-dim);
+    min-width:20px;
+  }
+
+  .topic-count {
+    margin-left:auto;
+    background: var(--surface2);
+    border-radius:4px;
+    padding:2px 6px;
+    font-family:'DM Mono', monospace;
+    font-size:10px;
+    color: var(--text-dim);
+  }
+
+  .topic-btn.active .topic-count {
+    background: rgba(61,255,160,0.15);
+    color: var(--accent);
+  }
+
+  /* CONTENT */
+  .content {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 40px 20px;
+    gap:32px;
+  }
+
+  /* Topic header */
+  .topic-header {
+    text-align:center;
+    max-width:700px;
+  }
+
+  .topic-tag {
+    font-family:'DM Mono', monospace;
+    font-size:11px;
+    letter-spacing:3px;
+    color: var(--accent);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+
+  .topic-title {
+    font-family:'Playfair Display', serif;
+    font-size:32px;
+    font-weight:600;
+    letter-spacing:-1px;
+    line-height:1.1;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    width:100%;
+    max-width:700px;
+  }
+
+  .progress-info {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:8px;
+  }
+
+  .progress-label {
+    font-family:'DM Mono', monospace;
+    font-size:11px;
+    color: var(--text-muted);
+  }
+
+  .progress-frac {
+    font-family:'DM Mono', monospace;
+    font-size:12px;
+    color: var(--accent);
+  }
+
+  .progress-track {
+    height:3px;
+    background: var(--border);
+    border-radius:2px;
+    overflow:hidden;
+  }
+
+  .progress-fill {
+    height:100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius:2px;
+    transition: width 0.4s ease;
+  }
+
+  /* FLASHCARD */
+  .card-area {
+    perspective: 1200px;
+    width:100%;
+    max-width:700px;
+    height:380px;
+    cursor:pointer;
+  }
+
+  .card-inner {
+    width:100%; height:100%;
+    position:relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position:absolute; inset:0;
+    backface-visibility: hidden;
+    border-radius:20px;
+    padding: 48px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .card-front {
+    background: var(--card-front);
+  }
+
+  .card-back {
+    background: var(--card-back);
+    transform: rotateY(180deg);
+    border-color: rgba(61,255,160,0.2);
+  }
+
+  /* Card decorative elements */
+  .card-face::before {
+    content:'';
+    position:absolute;
+    top:-40px; right:-40px;
+    width:180px; height:180px;
+    border-radius:50%;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    pointer-events:none;
+  }
+
+  .card-back::before {
+    background: radial-gradient(circle, rgba(61,255,160,0.18) 0%, transparent 70%);
+  }
+
+  .card-label {
+    font-family:'DM Mono', monospace;
+    font-size:10px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color: var(--text-dim);
+    margin-bottom:20px;
+    position:relative;
+  }
+
+  .card-front .card-label::after {
+    content: '↕ TAP TO FLIP';
+    display:block;
+    margin-top:4px;
+    font-size:9px;
+    color: var(--text-dim);
+    opacity:0.6;
+  }
+
+  .card-back .card-label {
+    color: rgba(61,255,160,0.5);
+  }
+
+  .card-question {
+    font-family:'Playfair Display', serif;
+    font-size:22px;
+    font-weight:600;
+    line-height:1.4;
+    color: var(--text);
+    max-width:560px;
+    position:relative;
+  }
+
+  .card-answer {
+    font-size:15px;
+    line-height:1.7;
+    color: var(--text);
+    max-width:560px;
+    position:relative;
+    font-weight:300;
+  }
+
+  .card-answer strong {
+    color: var(--accent);
+    font-weight:600;
+  }
+
+  .card-corner {
+    position:absolute;
+    bottom:20px; right:24px;
+    font-family:'DM Mono', monospace;
+    font-size:10px;
+    color: var(--text-dim);
+  }
+
+  /* CONTROLS */
+  .controls {
+    display:flex; gap:12px; align-items:center;
+  }
+
+  .btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 28px;
+    border-radius:10px;
+    font-family:'DM Sans', sans-serif;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    transition: all 0.15s;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .btn:hover {
+    background: var(--surface2);
+    border-color: var(--text-dim);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a0f0d;
+    font-weight:600;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent2);
+    border-color: var(--accent2);
+  }
+
+  .btn-icon {
+    width:44px; height:44px;
+    padding:0;
+    border-radius:10px;
+    justify-content:center;
+    font-size:18px;
+  }
+
+  .btn:disabled {
+    opacity:0.3;
+    cursor:not-allowed;
+  }
+
+  /* SCORE BUTTONS */
+  .score-row {
+    display:flex; gap:10px;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.3s;
+  }
+
+  .score-row.visible {
+    opacity:1;
+    pointer-events:all;
+  }
+
+  .score-btn {
+    padding: 10px 20px;
+    border-radius:8px;
+    font-size:13px;
+    font-family:'DM Mono', monospace;
+    cursor:pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+    font-weight:500;
+  }
+
+  .score-easy {
+    background: rgba(61,255,160,0.1);
+    border-color: rgba(61,255,160,0.3);
+    color: var(--accent);
+  }
+  .score-easy:hover { background: rgba(61,255,160,0.2); }
+
+  .score-medium {
+    background: rgba(255,209,102,0.1);
+    border-color: rgba(255,209,102,0.3);
+    color: var(--warning);
+  }
+  .score-medium:hover { background: rgba(255,209,102,0.2); }
+
+  .score-hard {
+    background: rgba(255,107,107,0.1);
+    border-color: rgba(255,107,107,0.3);
+    color: var(--danger);
+  }
+  .score-hard:hover { background: rgba(255,107,107,0.2); }
+
+  /* Shuffle button */
+  .btn-shuffle {
+    letter-spacing:0.5px;
+  }
+
+  /* Keyboard hint */
+  .key-hint {
+    font-family:'DM Mono', monospace;
+    font-size:11px;
+    color: var(--text-dim);
+    display:flex; gap:12px;
+  }
+
+  .key {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius:4px;
+    padding:2px 7px;
+    font-size:11px;
+  }
+
+  /* All done state */
+  .done-state {
+    display:none;
+    text-align:center;
+    padding:60px 40px;
+    max-width:500px;
+  }
+
+  .done-state.visible { display:block; }
+  .card-area.done { display:none; }
+
+  .done-icon {
+    font-size:64px;
+    margin-bottom:20px;
+  }
+
+  .done-title {
+    font-family:'Playfair Display', serif;
+    font-size:28px;
+    margin-bottom:12px;
+  }
+
+  .done-sub {
+    color: var(--text-muted);
+    font-size:14px;
+    margin-bottom:28px;
+    line-height:1.6;
+  }
+
+  .score-summary {
+    display:flex; gap:16px; justify-content:center; margin-bottom:28px;
+  }
+
+  .score-pill {
+    padding:8px 16px;
+    border-radius:8px;
+    font-family:'DM Mono', monospace;
+    font-size:12px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius:2px; }
+
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { border-right:none; border-bottom: 1px solid var(--border); padding:12px 0; }
+    .topic-btn { padding: 8px 16px; }
+    header { padding:16px 20px; }
+    .header-stats { display:none; }
+    .card-area { height:320px; }
+    .card-face { padding:32px 24px; }
+    .card-question { font-size:18px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🧬</div>
+    <div>
+      <div class="logo-text">BioCards</div>
+      <div class="logo-sub">9700 AS Level</div>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="stat-chip">Cards studied: <span id="studiedCount">0</span></div>
+    <div class="stat-chip">Easy: <span id="easyCount">0</span> &nbsp;Med: <span id="medCount">0</span> &nbsp;Hard: <span id="hardCount">0</span></div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-label">Topics</div>
+    <div id="topicList"></div>
+  </div>
+
+  <div class="content">
+    <div class="topic-header">
+      <div class="topic-tag" id="topicTag">Chapter 1</div>
+      <div class="topic-title" id="topicTitle">Cell Structure</div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span class="progress-label">PROGRESS</span>
+        <span class="progress-frac" id="progressFrac">1 / 10</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="card-area" id="cardArea" onclick="flipCard()">
+      <div class="card-inner" id="cardInner">
+        <div class="card-face card-front">
+          <div class="card-label">Question</div>
+          <div class="card-question" id="cardQuestion">Loading...</div>
+          <div class="card-corner" id="cardCorner">1 / 1</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-label">Answer</div>
+          <div class="card-answer" id="cardAnswer">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="done-state" id="doneState">
+      <div class="done-icon">✅</div>
+      <div class="done-title">Topic Complete!</div>
+      <div class="done-sub">You've reviewed all cards in this topic.<br>Check your scores below.</div>
+      <div class="score-summary">
+        <div class="score-pill score-easy">😌 Easy: <span id="doneEasy">0</span></div>
+        <div class="score-pill score-medium">🤔 Medium: <span id="doneMed">0</span></div>
+        <div class="score-pill score-hard">😰 Hard: <span id="doneHard">0</span></div>
+      </div>
+      <button class="btn btn-primary" onclick="restartTopic()">↺ Restart Topic</button>
+    </div>
+
+    <div class="score-row" id="scoreRow">
+      <button class="score-btn score-easy" onclick="markCard('easy')">😌 Easy</button>
+      <button class="score-btn score-medium" onclick="markCard('medium')">🤔 Medium</button>
+      <button class="score-btn score-hard" onclick="markCard('hard')">😰 Hard</button>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-icon" id="prevBtn" onclick="prevCard()" title="Previous">←</button>
+      <button class="btn btn-primary" onclick="nextCard()" id="nextBtn">Next →</button>
+      <button class="btn btn-icon btn-shuffle" onclick="shuffleCards()" title="Shuffle">⇄</button>
+    </div>
+
+    <div class="key-hint">
+      <span><span class="key">Space</span> Flip</span>
+      <span><span class="key">→</span> Next</span>
+      <span><span class="key">←</span> Prev</span>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const TOPICS = [
+  {
+    id: 1,
+    name: "Cell Structure",
+    tag: "Chapter 1",
+    cards: [
+      { q: "What is the function of the rough endoplasmic reticulum (RER)?", a: "The <strong>RER</strong> synthesises and transports <strong>proteins</strong>. Ribosomes on its surface translate mRNA, and the protein is threaded into the lumen for modification and transport to the Golgi apparatus." },
+      { q: "How does the smooth ER differ from the rough ER?", a: "The <strong>smooth ER</strong> lacks ribosomes and is involved in <strong>lipid and steroid synthesis</strong> and detoxification. The rough ER bears ribosomes and is involved in <strong>protein synthesis and transport</strong>." },
+      { q: "What is the role of the Golgi apparatus?", a: "The Golgi apparatus <strong>modifies, packages and sorts</strong> proteins and lipids received from the ER into vesicles. It adds carbohydrates to form glycoproteins and glycolipids, and directs products to their destinations." },
+      { q: "What are the key differences between prokaryotic and eukaryotic cells?", a: "<strong>Prokaryotes</strong>: no membrane-bound nucleus, no membrane-bound organelles, 70S ribosomes, circular DNA, smaller (1–10 µm).<br><strong>Eukaryotes</strong>: true nucleus, membrane-bound organelles, 80S ribosomes, linear DNA, larger (10–100 µm)." },
+      { q: "Describe the structure of a mitochondrion.", a: "Mitochondria have a <strong>double membrane</strong>: outer membrane (smooth) and inner membrane (folded into <strong>cristae</strong>). The matrix contains enzymes for the Krebs cycle, mitochondrial DNA, and 70S ribosomes. The <strong>cristae</strong> increase surface area for ATP synthesis." },
+      { q: "What is the role of lysosomes?", a: "Lysosomes contain <strong>hydrolytic enzymes</strong> (hydrolases) that digest worn-out organelles (<strong>autophagy</strong>), foreign material (<strong>phagocytosis</strong>), and cellular debris. They maintain an acidic interior (pH ~4.5)." },
+      { q: "What is the 9+2 arrangement in a cilium?", a: "Cilia contain <strong>9 peripheral pairs</strong> of microtubule doublets surrounding <strong>1 central pair</strong> — a total of 11 microtubule pairs. Motor protein <strong>dynein</strong> causes sliding between doublets, producing the beating motion." },
+      { q: "What is the difference between resolution and magnification?", a: "<strong>Magnification</strong> = how much larger an image is than the actual specimen. <strong>Resolution</strong> = the ability to distinguish two adjacent points as separate. Higher resolution means finer detail is visible. Electron microscopes have greater resolution than light microscopes (~0.1 nm vs ~200 nm)." },
+      { q: "State the formula used in microscopy calculations.", a: "<strong>Magnification = Image size ÷ Actual size</strong><br>Rearranged: Actual size = Image size ÷ Magnification<br>Always convert units carefully (µm ↔ mm: 1 mm = 1000 µm)." },
+      { q: "What are the advantages of the electron microscope over the light microscope?", a: "<strong>Electron microscope</strong> advantages: much higher <strong>resolution</strong> (~0.1 nm), can reveal ultrastructure (e.g. ribosomes, cristae). Disadvantages: specimens must be dead, complex preparation, very expensive. <strong>Light microscope</strong>: can view living specimens, simpler, cheaper." },
+    ]
+  },
+  {
+    id: 2,
+    name: "Biological Molecules",
+    tag: "Chapter 2",
+    cards: [
+      { q: "What are the monomers of carbohydrates, proteins and nucleic acids?", a: "<strong>Carbohydrates</strong>: monosaccharides (e.g. glucose)<br><strong>Proteins</strong>: amino acids<br><strong>Nucleic acids</strong>: nucleotides<br>These are linked by condensation reactions to form polymers." },
+      { q: "Describe the structure of glucose and distinguish α from β glucose.", a: "Glucose (C₆H₁₂O₆) is a hexose monosaccharide. <strong>α-glucose</strong>: –OH on C1 is below the ring. <strong>β-glucose</strong>: –OH on C1 is above the ring. This difference determines which polymer forms (starch vs cellulose)." },
+      { q: "How is a glycosidic bond formed?", a: "A <strong>condensation reaction</strong> between two monosaccharides eliminates a <strong>water molecule</strong>, forming a <strong>glycosidic bond</strong>. The bond links C1 of one sugar to C4 of another (1,4-glycosidic bond) or C1 to C6 (1,6-glycosidic bond, causing branching)." },
+      { q: "Compare the structures of starch and cellulose.", a: "<strong>Starch</strong>: made of <strong>α-glucose</strong>; amylose is unbranched (1,4 bonds), amylopectin is branched (1,4 and 1,6 bonds); coiled, compact, good for storage.<br><strong>Cellulose</strong>: made of <strong>β-glucose</strong>; straight, unbranched chains; alternate glucose units flipped 180°; cross-linked by H-bonds forming microfibrils; rigid, structural role in cell walls." },
+      { q: "What is the primary structure of a protein?", a: "The <strong>primary structure</strong> is the linear sequence of <strong>amino acids</strong> joined by peptide bonds. It is determined by the gene and determines all higher levels of structure and ultimately the protein's function." },
+      { q: "Describe secondary, tertiary and quaternary protein structure.", a: "<strong>Secondary</strong>: regular folding due to H-bonds between –CO and –NH groups → α-helix or β-pleated sheet.<br><strong>Tertiary</strong>: overall 3D shape; ionic bonds, H-bonds, disulfide bridges, hydrophobic interactions.<br><strong>Quaternary</strong>: multiple polypeptide subunits (e.g. haemoglobin: 4 subunits)." },
+      { q: "What is a phospholipid and how does its structure relate to its role in membranes?", a: "A <strong>phospholipid</strong> has a <strong>glycerol</strong> backbone, two fatty acid tails (hydrophobic) and a phosphate group (hydrophilic head). This <strong>amphipathic</strong> nature causes phospholipids to form a <strong>bilayer</strong> in water — tails inward, heads outward — forming the basis of cell membranes." },
+      { q: "What is the Benedict's test and what does a positive result indicate?", a: "<strong>Benedict's test</strong> detects reducing sugars. Add Benedict's reagent, heat in water bath. <strong>Positive</strong>: blue → green → yellow → orange → brick red precipitate, indicating the presence of a reducing sugar (e.g. glucose, maltose). Non-reducing sugars (e.g. sucrose) require acid hydrolysis first." },
+      { q: "How do you test for starch, protein, and lipids?", a: "<strong>Starch</strong>: add iodine in KI solution → blue-black colour.<br><strong>Protein (Biuret)</strong>: add NaOH then CuSO₄ → <strong>purple/violet</strong> colour (peptide bonds).<br><strong>Lipid (Emulsion)</strong>: dissolve in ethanol, add to water → <strong>milky/cloudy emulsion</strong>." },
+      { q: "What properties of water make it important in biology?", a: "<strong>Cohesion</strong>: H-bonds cause water molecules to stick together (transpiration stream).<br><strong>High specific heat capacity</strong>: resists temperature change (habitat stability).<br><strong>High latent heat of vaporisation</strong>: evaporation is cooling.<br><strong>Solvent</strong>: polar molecule dissolves ionic/polar substances.<br><strong>Metabolite</strong>: used in hydrolysis and condensation reactions." },
+    ]
+  },
+  {
+    id: 3,
+    name: "Enzymes",
+    tag: "Chapter 3",
+    cards: [
+      { q: "What is an enzyme and how does it work according to the induced fit model?", a: "Enzymes are <strong>biological catalysts</strong> (globular proteins) that lower activation energy. In the <strong>induced fit model</strong>, the active site changes shape slightly when the substrate binds, forming a precise enzyme-substrate complex that stresses bonds in the substrate, promoting the reaction." },
+      { q: "What is the difference between competitive and non-competitive inhibition?", a: "<strong>Competitive inhibition</strong>: inhibitor has similar shape to substrate, binds to active site. Adding more substrate can overcome it. Vmax unchanged, Km increases.<br><strong>Non-competitive inhibition</strong>: inhibitor binds to an <strong>allosteric site</strong>, changes active site shape. Cannot be overcome by more substrate. Vmax decreases, Km unchanged." },
+      { q: "How does temperature affect enzyme activity?", a: "As temperature increases, kinetic energy increases → more frequent collisions → rate increases up to the <strong>optimum temperature</strong>. Above optimum, <strong>H-bonds and other bonds holding the tertiary structure break</strong> → enzyme <strong>denatures</strong> → active site changes shape irreversibly → rate falls to zero." },
+      { q: "How does pH affect enzyme activity?", a: "Changes in pH alter the <strong>ionisation of R-groups</strong> in the active site. This disrupts <strong>ionic bonds and H-bonds</strong>, changing the active site's shape. Extreme pH values cause denaturation. Each enzyme has an <strong>optimum pH</strong> (e.g. pepsin ~2, amylase ~7)." },
+      { q: "What is the effect of substrate concentration on enzyme activity?", a: "As substrate concentration increases, rate increases (more enzyme-substrate collisions) until all active sites are occupied → enzyme is <strong>saturated</strong> → rate plateaus at <strong>Vmax</strong>. The <strong>Km</strong> is the substrate concentration at half Vmax and is a measure of enzyme-substrate affinity." },
+      { q: "What is meant by enzyme specificity?", a: "Each enzyme has a uniquely shaped <strong>active site</strong> complementary only to its specific substrate(s). This is due to the precise tertiary structure of the enzyme. Only the correct substrate can form an enzyme-substrate complex and undergo catalysis." },
+      { q: "What is an end-product inhibitor? Give an example.", a: "<strong>End-product (feedback) inhibition</strong>: the final product of a metabolic pathway acts as a non-competitive inhibitor of an enzyme earlier in the pathway, preventing overproduction. E.g. in amino acid synthesis, the end amino acid inhibits the first enzyme in its synthesis pathway." },
+      { q: "What is coenzyme and prosthetic group?", a: "A <strong>coenzyme</strong> is an organic, non-protein cofactor that temporarily binds to the enzyme (e.g. NAD⁺). A <strong>prosthetic group</strong> is a cofactor permanently attached to the enzyme (e.g. the haem group in catalase). Both are required for enzyme activity." },
+    ]
+  },
+  {
+    id: 4,
+    name: "Cell Membranes & Transport",
+    tag: "Chapter 4",
+    cards: [
+      { q: "Describe the fluid mosaic model of the cell membrane.", a: "The membrane consists of a <strong>phospholipid bilayer</strong> (fluid) with <strong>proteins</strong> embedded (mosaic). Proteins may be integral (span the bilayer) or peripheral (on the surface). Also contains <strong>cholesterol</strong> (regulates fluidity) and <strong>glycoproteins/glycolipids</strong> (cell recognition, receptors)." },
+      { q: "What is the role of cholesterol in the membrane?", a: "Cholesterol molecules slot between phospholipid tails, <strong>reducing fluidity at high temperatures</strong> (prevents membrane becoming too fluid) and <strong>preventing solidification at low temperatures</strong>. It makes the membrane more <strong>stable</strong> and less permeable to water-soluble substances." },
+      { q: "What is osmosis?", a: "Osmosis is the <strong>net movement of water molecules</strong> by diffusion through a <strong>partially permeable membrane</strong>, from a region of <strong>higher water potential</strong> (less negative) to a region of <strong>lower water potential</strong> (more negative), down the water potential gradient." },
+      { q: "Define water potential (Ψ) and state its maximum value.", a: "<strong>Water potential (Ψ)</strong> is the tendency of water molecules to move from one region to another. It is measured in <strong>kilopascals (kPa)</strong>. Pure water has the <strong>maximum water potential of 0 kPa</strong>. Adding solutes lowers (makes more negative) the water potential." },
+      { q: "What happens to a red blood cell and a plant cell placed in a hypotonic solution?", a: "<strong>Red blood cell</strong>: water enters by osmosis → cell swells → may <strong>burst (lyse)</strong>.<br><strong>Plant cell</strong>: water enters → cell swells → <strong>turgor pressure</strong> builds against cell wall → cell becomes <strong>turgid</strong> but does not burst (cell wall provides strength)." },
+      { q: "What is plasmolysis?", a: "<strong>Plasmolysis</strong> occurs when a plant cell is placed in a <strong>hypertonic solution</strong>. Water leaves the cell by osmosis, the cytoplasm shrinks and the cell membrane pulls away from the cell wall. The cell becomes <strong>flaccid</strong>, then plasmolysed. The point of initial membrane pull-away is called <strong>incipient plasmolysis</strong>." },
+      { q: "Compare facilitated diffusion and active transport.", a: "<strong>Facilitated diffusion</strong>: moves substances down concentration gradient; uses channel or carrier proteins; no ATP required.<br><strong>Active transport</strong>: moves substances <strong>against</strong> the concentration gradient; uses carrier proteins (pumps); <strong>requires ATP</strong>; specific to the molecule transported." },
+      { q: "What is endocytosis and exocytosis?", a: "<strong>Endocytosis</strong>: cell takes in large molecules/particles by <strong>engulfing them in vesicles</strong> pinched off from the cell membrane (phagocytosis = solids; pinocytosis = fluids).<br><strong>Exocytosis</strong>: vesicles fuse with the cell membrane, releasing contents outside the cell (e.g. secretion of neurotransmitters, hormones)." },
+    ]
+  },
+  {
+    id: 5,
+    name: "Mitosis & Cell Cycle",
+    tag: "Chapter 5",
+    cards: [
+      { q: "What are the stages of the cell cycle?", a: "The cell cycle consists of:<br><strong>Interphase</strong> (G1, S phase, G2) — cell grows, DNA replicates.<br><strong>Mitosis</strong> (PMAT: Prophase, Metaphase, Anaphase, Telophase) — nuclear division.<br><strong>Cytokinesis</strong> — cytoplasm divides, producing two identical daughter cells." },
+      { q: "What happens during each phase of mitosis?", a: "<strong>Prophase</strong>: chromosomes condense, spindle fibres form.<br><strong>Metaphase</strong>: chromosomes align at equator, spindle fibres attach to centromeres.<br><strong>Anaphase</strong>: centromeres split, chromatids pulled to poles by spindle fibres.<br><strong>Telophase</strong>: nuclear envelopes reform, chromosomes decondense." },
+      { q: "What is semi-conservative DNA replication?", a: "Each strand of the double helix acts as a <strong>template</strong>. The two original strands separate; each is used to build a new complementary strand. Each daughter molecule contains <strong>one old and one new strand</strong> — hence 'semi-conservative'. Proven by the Meselson-Stahl experiment using ¹⁵N / ¹⁴N." },
+      { q: "What enzymes are involved in DNA replication?", a: "<strong>Helicase</strong>: unwinds the double helix by breaking H-bonds between base pairs.<br><strong>DNA polymerase</strong>: adds nucleotides in a 5'→3' direction, using each strand as a template.<br><strong>DNA ligase</strong>: joins Okazaki fragments on the lagging strand." },
+      { q: "Why is mitosis important?", a: "Mitosis produces <strong>genetically identical (diploid) daughter cells</strong> for:<br>• Growth of multicellular organisms<br>• Repair of damaged tissues<br>• Asexual reproduction<br>• Replacement of cells (e.g. skin cells, red blood cells)" },
+      { q: "What is a stem cell?", a: "A <strong>stem cell</strong> is an <strong>unspecialised</strong> cell that can divide by mitosis to produce daughter cells that can either remain as stem cells or <strong>differentiate</strong> into specialised cell types. <strong>Totipotent</strong> stem cells can differentiate into any cell type; <strong>pluripotent</strong> cells can form most cell types." },
+      { q: "How does cancer relate to the cell cycle?", a: "Cancer results from <strong>uncontrolled cell division</strong> due to mutations in genes controlling the cell cycle (tumour suppressor genes, proto-oncogenes). Checkpoints that normally halt the cycle if DNA is damaged fail, producing a <strong>tumour</strong> (mass of abnormal cells)." },
+    ]
+  },
+  {
+    id: 6,
+    name: "Nucleic Acids & Protein Synthesis",
+    tag: "Chapter 6",
+    cards: [
+      { q: "Describe the structure of DNA.", a: "<strong>DNA</strong> is a double-stranded helix. Each strand is a polynucleotide made of nucleotides (deoxyribose sugar + phosphate + nitrogenous base). Strands are antiparallel (5'→3' and 3'→5'). Bases pair by H-bonds: <strong>A–T</strong> (2 H-bonds), <strong>C–G</strong> (3 H-bonds)." },
+      { q: "What are the differences between DNA and RNA?", a: "<strong>DNA</strong>: double-stranded, deoxyribose sugar, bases A/T/C/G, found in nucleus.<br><strong>RNA</strong>: single-stranded, ribose sugar, bases A/<strong>U</strong>/C/G (uracil replaces thymine), found in nucleus and cytoplasm." },
+      { q: "What is a codon and an anticodon?", a: "A <strong>codon</strong> is a sequence of <strong>3 bases on mRNA</strong> that codes for a specific amino acid (or start/stop signal). An <strong>anticodon</strong> is a complementary triplet of bases on the <strong>tRNA</strong> molecule that pairs with the codon during translation." },
+      { q: "Outline the process of transcription.", a: "<strong>Transcription</strong> occurs in the nucleus:<br>1. DNA helix unwinds; H-bonds break (RNA polymerase).<br>2. Template strand read 3'→5'.<br>3. RNA nucleotides added by complementary base pairing (A→U, T→A, C→G, G→C).<br>4. mRNA strand produced; released from DNA template.<br>5. mRNA moves out of nucleus through nuclear pores." },
+      { q: "Outline the process of translation.", a: "<strong>Translation</strong> occurs at ribosomes:<br>1. mRNA attaches to ribosome.<br>2. tRNA with complementary anticodon carries amino acid to ribosome (codon–anticodon pairing).<br>3. Peptide bond forms between adjacent amino acids.<br>4. Ribosome moves along mRNA; process repeats.<br>5. Stop codon signals end; polypeptide released." },
+      { q: "What is the role of ATP in cells?", a: "<strong>ATP (adenosine triphosphate)</strong> is the universal energy currency. ATP is hydrolysed to <strong>ADP + Pᵢ</strong>, releasing energy for cellular processes (active transport, muscle contraction, biosynthesis). ATP is synthesised by condensation of ADP + Pᵢ (in respiration and photosynthesis)." },
+    ]
+  },
+  {
+    id: 7,
+    name: "Transport in Plants",
+    tag: "Chapter 7",
+    cards: [
+      { q: "What are xylem and phloem and what do they transport?", a: "<strong>Xylem</strong>: transports <strong>water and mineral ions</strong> from roots to leaves (transpiration stream). Dead tissue; no cytoplasm; cell walls thickened with <strong>lignin</strong>.<br><strong>Phloem</strong>: transports <strong>assimilates</strong> (mainly sucrose) up and down the plant. Living tissue; sieve tube elements + companion cells." },
+      { q: "What is transpiration and what drives it?", a: "<strong>Transpiration</strong> is the loss of water vapour from plant leaves (mainly through <strong>stomata</strong>). It is driven by the <strong>water potential gradient</strong> from wet mesophyll cells to dry air. Evaporation of water from mesophyll cells pulls water up the xylem (tension-cohesion mechanism)." },
+      { q: "What factors affect the rate of transpiration?", a: "<strong>↑ Temperature</strong>: more evaporation → higher rate.<br><strong>↑ Light</strong>: stomata open → higher rate.<br><strong>↑ Air movement (wind)</strong>: removes water vapour from boundary layer → steeper gradient → higher rate.<br><strong>↑ Humidity</strong>: reduces the water potential gradient → lower rate." },
+      { q: "Explain the cohesion-tension theory of water transport in xylem.", a: "1. Water evaporates from mesophyll cells (transpiration).<br>2. This lowers the water potential of mesophyll cells → water moves from xylem into cells by osmosis.<br>3. <strong>Tension</strong> (negative pressure) created in xylem pulls water column upward.<br>4. <strong>Cohesion</strong> between water molecules (H-bonds) keeps the column intact.<br>5. Water absorbed from soil by root hair cells by osmosis." },
+      { q: "What is the apoplast and symplast pathway?", a: "<strong>Apoplast pathway</strong>: water moves through <strong>cell walls</strong> and intercellular spaces (no crossing membranes).<br><strong>Symplast pathway</strong>: water moves through <strong>cytoplasm and plasmodesmata</strong> (crosses membranes).<br>The <strong>Casparian strip</strong> (suberin) in endodermal cell walls blocks the apoplast, forcing water into the symplast to control mineral uptake." },
+      { q: "What is the mass flow (pressure flow) hypothesis for phloem transport?", a: "1. Sucrose actively loaded into sieve tubes at source (e.g. leaves) → lowers water potential → water enters by osmosis → high pressure.<br>2. At sink (e.g. roots, fruits), sucrose is unloaded → water potential increases → water leaves → lower pressure.<br>3. <strong>Mass flow</strong> of sap from high → low pressure carries sucrose from source to sink." },
+      { q: "What is the structure and function of a sieve tube element and companion cell?", a: "<strong>Sieve tube element</strong>: living cell; no nucleus or tonoplast; cytoplasm reduced; sieve plates at ends allow flow of sucrose solution.<br><strong>Companion cell</strong>: has nucleus and many mitochondria; provides energy (ATP) for active loading of sucrose into sieve tube; connected by plasmodesmata." },
+    ]
+  },
+  {
+    id: 8,
+    name: "Transport in Mammals",
+    tag: "Chapter 8",
+    cards: [
+      { q: "Describe the structure of the heart.", a: "The heart has <strong>4 chambers</strong>: right and left atria (receive blood) and right and left ventricles (pump blood). <strong>Valves</strong>: atrioventricular valves (bicuspid left, tricuspid right) prevent backflow from ventricles to atria; <strong>semilunar valves</strong> prevent backflow from aorta/pulmonary artery. Left ventricle wall is thicker (pumps to whole body)." },
+      { q: "Trace the flow of blood through the heart and body.", a: "Vena cava → <strong>right atrium</strong> → right ventricle → <strong>pulmonary artery</strong> → lungs (oxygenated) → pulmonary vein → <strong>left atrium</strong> → left ventricle → <strong>aorta</strong> → body. This is the <strong>double circulatory system</strong> (pulmonary + systemic circuits)." },
+      { q: "What causes the opening and closing of heart valves?", a: "Valves open and close due to <strong>pressure differences</strong> between chambers. When pressure in a chamber exceeds that on the other side, the valve opens; when pressure falls below, the valve closes. Valves ensure <strong>unidirectional blood flow</strong>." },
+      { q: "What is the cardiac cycle?", a: "The cardiac cycle = one complete heartbeat:<br><strong>Atrial systole</strong>: atria contract, push blood into ventricles.<br><strong>Ventricular systole</strong>: ventricles contract, push blood into aorta/pulmonary artery.<br><strong>Diastole</strong>: heart muscle relaxes, chambers fill with blood. Typical resting HR = 70 bpm; cycle duration ≈ 0.8 s." },
+      { q: "What controls the heart rate (cardiac control)?", a: "The <strong>SAN (sino-atrial node)</strong> in the right atrium acts as the <strong>pacemaker</strong>, initiating the impulse. The wave of excitation spreads to the AVN (atrio-ventricular node), then along the <strong>bundle of His</strong> and <strong>Purkyne fibres</strong> to the ventricle walls, causing ventricular contraction from the apex upwards." },
+      { q: "Compare arteries, veins and capillaries.", a: "<strong>Arteries</strong>: thick muscular/elastic walls, small lumen, carry blood away from heart at high pressure, no valves.<br><strong>Veins</strong>: thin walls, large lumen, carry blood to heart at low pressure, have valves.<br><strong>Capillaries</strong>: one cell thick (endothelium only), exchange of gases/nutrients/waste with tissues, very narrow lumen." },
+      { q: "How does haemoglobin transport oxygen?", a: "Haemoglobin (Hb) has 4 subunits, each with a haem group containing Fe²⁺. Each Fe²⁺ binds one O₂ → <strong>oxyhaemoglobin</strong>. Loading occurs in the lungs (high pO₂); unloading occurs in respiring tissues (low pO₂). The <strong>oxyhaemoglobin dissociation curve</strong> is S-shaped due to cooperative binding." },
+      { q: "What is the Bohr effect?", a: "The <strong>Bohr effect</strong>: increased CO₂ lowers pH (more H⁺ ions). H⁺ binds to haemoglobin, reducing its affinity for O₂. The oxygen dissociation curve <strong>shifts right</strong>, meaning Hb releases more O₂ to actively respiring tissues where CO₂ is highest. This ensures O₂ delivery is matched to demand." },
+      { q: "How is tissue fluid formed and returned to the blood?", a: "At the <strong>arteriole end</strong> of capillaries, hydrostatic pressure forces fluid out of capillaries (filtration). At the <strong>venule end</strong>, oncotic pressure (due to plasma proteins) draws fluid back in. Excess tissue fluid enters the <strong>lymphatic system</strong> → lymph nodes → returned to blood via thoracic duct." },
+    ]
+  },
+  {
+    id: 9,
+    name: "Gas Exchange",
+    tag: "Chapter 9",
+    cards: [
+      { q: "What features are necessary for an efficient gas exchange surface?", a: "A large <strong>surface area to volume ratio</strong>, thin surface (short diffusion distance), moist surface (gases dissolve), and a good blood/ventilation supply to maintain the <strong>concentration gradient</strong>." },
+      { q: "Describe the structure of the human lung and its adaptations for gas exchange.", a: "<strong>Alveoli</strong>: thin walls (one cell layer — squamous epithelium), large total surface area, moist lining, rich capillary network. Ventilation maintains conc. gradient. <strong>Trachea/bronchi/bronchioles</strong>: cartilage rings support airway; ciliated epithelium removes mucus and debris." },
+      { q: "Describe the mechanism of breathing in (inhalation).", a: "<strong>Inhalation</strong>:<br>• <strong>External intercostal muscles</strong> contract → ribs move up and out<br>• <strong>Diaphragm</strong> muscles contract → diaphragm flattens<br>• Thoracic volume increases → pressure falls below atmospheric pressure → air flows in." },
+      { q: "Describe gas exchange in fish using gills.", a: "Water enters the mouth, passes over <strong>gill filaments</strong> and <strong>lamellae</strong> (large surface area, thin walls). Blood flows <strong>countercurrent</strong> to water → maintains concentration gradient along entire gill → maximum O₂ extraction (~80% of dissolved O₂). CO₂ diffuses out into water." },
+      { q: "How does the ventilation of an insect differ from that of a mammal?", a: "Insects have a <strong>tracheal system</strong>: air enters via <strong>spiracles</strong> (openings on the abdomen), travels through <strong>tracheae</strong> and <strong>tracheoles</strong> directly to cells. No blood transport of O₂/CO₂. <strong>Abdominal pumping</strong> (ventilation movements) aids airflow. Spiracles can close to reduce water loss." },
+      { q: "Describe gas exchange in a dicotyledonous leaf.", a: "<strong>Stomata</strong> (mainly in lower epidermis) allow CO₂ in and O₂/water vapour out. <strong>Spongy mesophyll</strong> has large air spaces, increasing surface area for gas exchange. Gases diffuse between mesophyll cells and sub-stomatal air spaces. The leaf is thin (short diffusion pathway)." },
+    ]
+  },
+  {
+    id: 10,
+    name: "Immunity",
+    tag: "Chapter 10",
+    cards: [
+      { q: "What is the difference between non-specific and specific immune responses?", a: "<strong>Non-specific</strong>: immediate, same response to any pathogen (phagocytosis, inflammation, fever). Does not involve memory.<br><strong>Specific</strong>: slower initially, targeted to a specific antigen; involves lymphocytes; produces immunological memory (faster response on re-exposure)." },
+      { q: "Describe phagocytosis.", a: "1. Phagocyte recognises antigen on pathogen (or opsonins mark it).<br>2. Phagocyte engulfs pathogen in a <strong>phagosome</strong> (endocytosis).<br>3. Lysosomes fuse → <strong>phagolysosome</strong>; hydrolytic enzymes digest pathogen.<br>4. Antigens presented on surface (antigen-presenting cell) to activate T cells." },
+      { q: "What is an antigen?", a: "An <strong>antigen</strong> is a molecule (usually a protein or glycoprotein) on the surface of a pathogen (or other foreign cell) that stimulates an <strong>immune response</strong>. The immune system recognises it as non-self. Self antigens on body cells are recognised as 'self' and normally do not trigger a response." },
+      { q: "What is the role of T lymphocytes in the immune response?", a: "<strong>T helper cells (TH)</strong>: activate B cells and cytotoxic T cells; release cytokines.<br><strong>T cytotoxic cells (TC)</strong>: destroy infected body cells and tumour cells by releasing <strong>perforins</strong> (pore-forming proteins).<br><strong>T memory cells</strong>: long-lived; allow faster response on re-exposure." },
+      { q: "How do B lymphocytes produce antibodies (humoral immunity)?", a: "B cell recognises antigen → activated by T helper cell → <strong>clonal selection</strong> → <strong>clonal expansion</strong> (mitosis) → <strong>plasma cells</strong> (secrete large amounts of specific antibody) + <strong>memory B cells</strong>. Antibodies neutralise or mark pathogens for destruction." },
+      { q: "What is an antibody? Describe its structure.", a: "An antibody (immunoglobulin) is a <strong>Y-shaped glycoprotein</strong> with 4 polypeptide chains (2 heavy, 2 light) held by <strong>disulfide bridges</strong>. The <strong>variable region</strong> at the tips of the Y forms the <strong>antigen-binding site</strong> — specific to one antigen. The constant region determines the antibody class/function." },
+      { q: "What is the difference between active and passive immunity?", a: "<strong>Active immunity</strong>: the immune system produces its own antibodies (natural: infection; artificial: vaccination). Long-lasting due to memory cells.<br><strong>Passive immunity</strong>: ready-made antibodies given (natural: mother's antibodies via placenta/breast milk; artificial: antitoxin injection). Short-lasting; no memory cells formed." },
+      { q: "How does a vaccine work?", a: "A vaccine contains <strong>antigens</strong> (killed/weakened pathogen, toxoid, or surface proteins) that stimulate an immune response <strong>without causing disease</strong>. The primary response produces memory cells. On subsequent exposure to the real pathogen, the <strong>secondary response</strong> is faster, larger, and prevents disease." },
+      { q: "What is the ELISA test and what is it used for?", a: "<strong>ELISA (Enzyme-Linked Immunosorbent Assay)</strong> detects specific antigens or antibodies in a sample. An enzyme-linked antibody produces a colour change if the target molecule is present. Used to diagnose HIV, detect allergens, screen blood donations, and in pregnancy tests." },
+    ]
+  },
+  {
+    id: 11,
+    name: "Infectious Diseases",
+    tag: "Chapter 11",
+    cards: [
+      { q: "What is an infectious disease? Give four types of pathogen.", a: "An <strong>infectious disease</strong> is caused by a pathogen that can be transmitted from one host to another. The four main types of pathogen are: <strong>bacteria</strong>, <strong>viruses</strong>, <strong>fungi</strong>, and <strong>protoctists</strong> (e.g. Plasmodium)." },
+      { q: "What is the difference between a pathogen and a parasite?", a: "A <strong>pathogen</strong> is any organism or agent that causes disease in a host. A <strong>parasite</strong> is an organism that lives in or on a host, benefiting at the host's expense. All parasites that cause disease are pathogens, but not all pathogens are parasites (e.g. viruses are not technically organisms)." },
+      { q: "Describe how cholera is transmitted and how it causes disease.", a: "<strong>Cholera</strong> is caused by the bacterium <em>Vibrio cholerae</em>. Transmission: <strong>faecal-oral route</strong> — contaminated water or food.<br>Pathology: bacteria colonise the small intestine, producing a <strong>toxin</strong> that causes chloride ions to be secreted into the gut lumen → water follows by osmosis → <strong>severe watery diarrhoea</strong> → dehydration and electrolyte imbalance." },
+      { q: "How does HIV cause AIDS?", a: "<strong>HIV</strong> (Human Immunodeficiency Virus) infects <strong>T helper cells (CD4⁺)</strong>. HIV uses <strong>reverse transcriptase</strong> to make DNA from its RNA genome, which integrates into the host's DNA. Gradual destruction of T helper cells impairs the immune response. <strong>AIDS</strong> develops when T helper cell count falls below 200 cells/mm³, leaving the person vulnerable to <strong>opportunistic infections</strong>." },
+      { q: "Describe the structure of HIV.", a: "HIV is a <strong>retrovirus</strong> with: two strands of <strong>RNA</strong> (genome), the enzyme <strong>reverse transcriptase</strong>, a <strong>protein capsid</strong>, and a <strong>lipid envelope</strong> derived from the host cell membrane. The envelope has <strong>glycoproteins</strong> (gp120) that bind to CD4 receptors on T helper cells." },
+      { q: "What is the life cycle of the malarial parasite (Plasmodium)?", a: "1. <strong>Anopheles</strong> mosquito injects <strong>sporozoites</strong> into blood.<br>2. Sporozoites enter liver cells → divide → produce <strong>merozoites</strong>.<br>3. Merozoites infect <strong>red blood cells</strong> → divide asexually → RBCs burst (releasing toxins → <strong>fever</strong>).<br>4. Some merozoites form <strong>gametocytes</strong>, taken up by mosquito during a blood meal → sexual reproduction in mosquito gut → cycle repeats." },
+      { q: "How is malaria transmitted and what measures prevent its spread?", a: "Malaria is transmitted by the bite of a <strong>female Anopheles mosquito</strong> (vector). Prevention: <strong>insecticide-treated bed nets</strong>, draining stagnant water (remove breeding sites), <strong>insecticides</strong> (DDT), antimalarial drugs (prophylaxis), biological control (Bt toxin, sterile males), and <strong>vaccines</strong> (e.g. RTS,S)." },
+      { q: "How is TB (tuberculosis) transmitted and how does it cause disease?", a: "<strong>TB</strong> is caused by <em>Mycobacterium tuberculosis</em>. Transmission: <strong>airborne droplets</strong> (coughing, sneezing). The bacteria are inhaled and infect <strong>lung macrophages</strong>. They survive inside macrophages, forming <strong>granulomas (tubercles)</strong>. Active TB causes lung tissue damage, persistent cough, night sweats, and weight loss." },
+      { q: "What is the difference between primary and post-primary (secondary) TB?", a: "<strong>Primary TB</strong>: initial infection; bacteria contained by immune system in granulomas; often asymptomatic (latent infection).<br><strong>Post-primary (secondary) TB</strong>: reactivation of latent TB or re-infection, often when immune system is weakened; causes active disease with lung damage, cavitation, and systemic symptoms." },
+      { q: "What social and biological factors increase the transmission of infectious diseases?", a: "<strong>Social</strong>: overcrowding, poor sanitation, lack of clean water, poverty, reduced access to healthcare, war/displacement, lack of vaccination programmes, international travel.<br><strong>Biological</strong>: development of antibiotic resistance, new strains of pathogens, suppressed immunity (e.g. HIV/AIDS), age (young/elderly more vulnerable)." },
+      { q: "How do bacteria cause damage to the body?", a: "Bacteria cause disease by:<br>• Producing <strong>exotoxins</strong> (secreted proteins that disrupt host cell function, e.g. cholera toxin)<br>• Producing <strong>endotoxins</strong> (cell wall components released when bacteria die, e.g. from gram-negative bacteria, causing fever)<br>• <strong>Directly destroying host cells</strong> as they multiply<br>• Triggering <strong>harmful immune responses</strong> (inflammation, sepsis)" },
+      { q: "How do viruses cause damage to the body?", a: "Viruses are <strong>obligate intracellular parasites</strong>. They cause damage by:<br>• <strong>Lysing host cells</strong> to release new virus particles<br>• <strong>Disrupting normal cell function</strong> (taking over protein synthesis)<br>• Triggering <strong>immune responses</strong> that damage surrounding tissue<br>• Causing <strong>cell transformation</strong> (some viruses can cause cancer, e.g. HPV)" },
+      { q: "What is antibiotic resistance and how does it develop?", a: "Antibiotic resistance arises by <strong>natural selection</strong>:<br>1. Mutation produces resistant bacteria.<br>2. Antibiotics kill non-resistant bacteria (<strong>selection pressure</strong>).<br>3. Resistant bacteria <strong>survive and reproduce</strong>, passing resistance genes on.<br>4. Resistance genes can also spread horizontally via <strong>plasmid transfer</strong>. Misuse (incomplete courses, overuse) accelerates this process." },
+      { q: "How can the global spread of infectious disease be controlled?", a: "<strong>Vector control</strong>: insecticides, removing breeding sites.<br><strong>Vaccination programmes</strong>: herd immunity reduces transmission.<br><strong>Quarantine and travel restrictions</strong>.<br><strong>Education and hygiene</strong>: hand washing, safe sex, clean water.<br><strong>Surveillance</strong>: WHO monitors outbreaks.<br><strong>Antibiotic stewardship</strong>: reducing unnecessary antibiotic use.<br><strong>Drug treatment</strong>: antiretrovirals (HIV), antimalarials." },
+      { q: "What is herd immunity and why is it important?", a: "<strong>Herd immunity</strong> occurs when a sufficiently large proportion of a population is immune (vaccinated or previously infected) that the pathogen can no longer spread effectively, protecting those who are not immune. The threshold varies by disease (e.g. ~95% for measles). It <strong>protects vulnerable individuals</strong> (immunocompromised, infants) who cannot be vaccinated." },
+    ]
+  },
+];
+
+// State
+let currentTopic = 0;
+let currentCard = 0;
+let isFlipped = false;
+let scores = { easy: 0, medium: 0, hard: 0 };
+let totalStudied = 0;
+let cards = [];
+
+function init() {
+  buildTopicList();
+  loadTopic(0);
+}
+
+function buildTopicList() {
+  const list = document.getElementById('topicList');
+  TOPICS.forEach((t, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'topic-btn' + (i === 0 ? ' active' : '');
+    btn.innerHTML = `<span class="topic-num">${String(t.id).padStart(2,'0')}</span>${t.name}<span class="topic-count">${t.cards.length}</span>`;
+    btn.onclick = () => { loadTopic(i); };
+    list.appendChild(btn);
+  });
+}
+
+function loadTopic(idx) {
+  currentTopic = idx;
+  currentCard = 0;
+  isFlipped = false;
+  cards = [...TOPICS[idx].cards];
+  scores = { easy:0, medium:0, hard:0 };
+
+  // Update sidebar
+  document.querySelectorAll('.topic-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === idx);
+  });
+
+  document.getElementById('topicTag').textContent = TOPICS[idx].tag;
+  document.getElementById('topicTitle').textContent = TOPICS[idx].name;
+
+  document.getElementById('doneState').classList.remove('visible');
+  document.getElementById('cardArea').style.display = '';
+
+  showCard();
+  updateProgress();
+  hideScoreRow();
+}
+
+function showCard() {
+  const card = cards[currentCard];
+  document.getElementById('cardQuestion').innerHTML = card.q;
+  document.getElementById('cardAnswer').innerHTML = card.a;
+  document.getElementById('cardCorner').textContent = `${currentCard + 1} / ${cards.length}`;
+
+  // Reset flip
+  const inner = document.getElementById('cardInner');
+  inner.classList.remove('flipped');
+  isFlipped = false;
+  hideScoreRow();
+}
+
+function flipCard() {
+  const inner = document.getElementById('cardInner');
+  isFlipped = !isFlipped;
+  inner.classList.toggle('flipped', isFlipped);
+  if (isFlipped) showScoreRow();
+  else hideScoreRow();
+}
+
+function showScoreRow() {
+  document.getElementById('scoreRow').classList.add('visible');
+}
+
+function hideScoreRow() {
+  document.getElementById('scoreRow').classList.remove('visible');
+}
+
+function nextCard() {
+  if (currentCard < cards.length - 1) {
+    currentCard++;
+    showCard();
+    updateProgress();
+  } else {
+    showDone();
+  }
+}
+
+function prevCard() {
+  if (currentCard > 0) {
+    currentCard--;
+    showCard();
+    updateProgress();
+  }
+}
+
+function markCard(level) {
+  scores[level]++;
+  totalStudied++;
+  updateHeaderStats();
+  nextCard();
+}
+
+function updateProgress() {
+  const pct = ((currentCard) / cards.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressFrac').textContent = `${currentCard + 1} / ${cards.length}`;
+  document.getElementById('prevBtn').disabled = currentCard === 0;
+}
+
+function updateHeaderStats() {
+  document.getElementById('studiedCount').textContent = totalStudied;
+  document.getElementById('easyCount').textContent = scores.easy;
+  document.getElementById('medCount').textContent = scores.medium;
+  document.getElementById('hardCount').textContent = scores.hard;
+}
+
+function showDone() {
+  document.getElementById('cardArea').style.display = 'none';
+  document.getElementById('doneState').classList.add('visible');
+  document.getElementById('doneEasy').textContent = scores.easy;
+  document.getElementById('doneMed').textContent = scores.medium;
+  document.getElementById('doneHard').textContent = scores.hard;
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressFrac').textContent = `${cards.length} / ${cards.length}`;
+  hideScoreRow();
+}
+
+function restartTopic() {
+  loadTopic(currentTopic);
+}
+
+function shuffleCards() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  currentCard = 0;
+  scores = { easy:0, medium:0, hard:0 };
+  showCard();
+  updateProgress();
+}
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft') prevCard();
+  if (e.key === '1') markCard('easy');
+  if (e.key === '2') markCard('medium');
+  if (e.key === '3') markCard('hard');
+});
+
+init();
+</script>
+</body>
+</html>
